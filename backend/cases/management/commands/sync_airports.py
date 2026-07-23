@@ -28,9 +28,9 @@ class Command(BaseCommand):
                 _, created = Airport.objects.update_or_create(
                     iata_code=iata,
                     defaults={
-                        'name': attrs.get('name', '')[:255],
-                        'city': attrs.get('city', '')[:255],
-                        'country': attrs.get('country', '')[:255],
+                        'name': (attrs.get('name') or '')[:255],
+                        'city': (attrs.get('city') or '')[:255],
+                        'country': (attrs.get('country') or '')[:255],
                     }
                 )
                 if created:
