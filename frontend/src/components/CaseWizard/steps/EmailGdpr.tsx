@@ -36,46 +36,79 @@ By providing your consent below, you agree to the processing of your personal da
 export const EmailGdpr: React.FC<Props> = ({ data, onChange, errors }) => {
   return (
     <div>
-      <h2>Email & GDPR Compliance</h2>
+      <h2>Email & GDPR</h2>
+      <p style={{ color: '#64748b', fontSize: '0.9rem', marginBottom: '1.5rem' }}>We need your email and consent to process your claim.</p>
 
-      <div style={{ marginBottom: '1.5rem' }}>
-        <label>Email Address</label>
+      <div style={{
+        marginBottom: '1.5rem',
+        padding: '1.5rem',
+        background: '#f8fafc',
+        borderRadius: '16px',
+        border: '1px solid #e2e8f0',
+      }}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <span>📧</span> Email Address
+        </label>
         <input
           type="email"
           value={data.email}
           onChange={(e) => onChange({ ...data, email: e.target.value })}
           placeholder="your.email@example.com"
           style={{
-            width: '100%',
-            padding: '0.5rem',
-            border: errors.email ? '1px solid red' : '1px solid #ccc',
-            borderRadius: '4px',
+            border: errors.email ? '2px solid #fb7185' : undefined,
+            background: errors.email ? '#fff1f2' : undefined,
           }}
         />
-        {errors.email && <div style={{ color: 'red', fontSize: '0.8rem' }}>{errors.email}</div>}
+        {errors.email && <div className="field-error">⚠ {errors.email}</div>}
       </div>
 
-      <div style={{ marginBottom: '1.5rem' }}>
-        <label>GDPR Data Protection Policy</label>
+      <div style={{
+        marginBottom: '1.5rem',
+        padding: '1.5rem',
+        background: '#f8fafc',
+        borderRadius: '16px',
+        border: '1px solid #e2e8f0',
+      }}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+          <span>🛡️</span> GDPR Data Protection Policy
+        </label>
         <div
           style={{
             maxHeight: '200px',
             overflowY: 'auto',
-            border: '1px solid #e5e7eb',
-            padding: '1rem',
-            borderRadius: '4px',
-            backgroundColor: '#f9fafb',
+            border: '1px solid #e2e8f0',
+            padding: '1.25rem',
+            borderRadius: '12px',
+            backgroundColor: 'white',
             whiteSpace: 'pre-wrap',
             fontSize: '0.85rem',
-            marginTop: '0.5rem',
+            lineHeight: '1.7',
+            color: '#475569',
           }}
         >
           {GDPR_TEXT}
         </div>
       </div>
 
-      <div>
-        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+      <div style={{
+        padding: '1.25rem 1.5rem',
+        background: data.gdpr_consent
+          ? 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)'
+          : '#f8fafc',
+        borderRadius: '16px',
+        border: data.gdpr_consent ? '2px solid #34d399' : '2px solid #e2e8f0',
+        transition: 'all 200ms ease',
+      }}>
+        <label style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.75rem',
+          cursor: 'pointer',
+          fontSize: '0.95rem',
+          fontWeight: 500,
+          color: data.gdpr_consent ? '#065f46' : '#475569',
+          margin: 0,
+        }}>
           <input
             type="checkbox"
             checked={data.gdpr_consent}
@@ -83,7 +116,7 @@ export const EmailGdpr: React.FC<Props> = ({ data, onChange, errors }) => {
           />
           I agree to the processing of my personal data as described above
         </label>
-        {errors.gdpr_consent && <div style={{ color: 'red', fontSize: '0.8rem' }}>{errors.gdpr_consent}</div>}
+        {errors.gdpr_consent && <div className="field-error" style={{ marginTop: '0.5rem' }}>⚠ {errors.gdpr_consent}</div>}
       </div>
     </div>
   );

@@ -105,11 +105,70 @@ class PassengerSerializer(serializers.Serializer):
         return value
 
 
+class DisruptionSerializer(serializers.Serializer):
+    disruption_type = serializers.ChoiceField(choices=[
+        ('CANCELLATION', 'Cancellation'),
+        ('DELAY', 'Delay'),
+        ('DENIED_BOARDING', 'Denied Boarding'),
+    ])
+    cancellation_notice_period = serializers.ChoiceField(
+        choices=[
+            ('MORE_THAN_14_DAYS', 'More than 14 days'),
+            ('LESS_THAN_14_DAYS', 'Less than 14 days'),
+            ('ON_FLIGHT_DAY', 'On flight day'),
+        ],
+        required=False, allow_null=True, allow_blank=True,
+    )
+    delay_arrival = serializers.ChoiceField(
+        choices=[
+            ('LESS_THAN_3H', 'Less than 3 hours'),
+            ('MORE_THAN_3H', 'More than 3 hours'),
+            ('CONNECTION_LOST', 'Connection flight lost'),
+        ],
+        required=False, allow_null=True, allow_blank=True,
+    )
+    denied_boarding_voluntary = serializers.BooleanField(required=False, allow_null=True)
+    denied_boarding_reason = serializers.ChoiceField(
+        choices=[
+            ('OVERBOOKED', 'Flight overbooked'),
+            ('AGGRESSIVE', 'Aggressive behavior with staff'),
+            ('INTOXICATION', 'Intoxication'),
+            ('UNSPECIFIED', 'Unspecified reason'),
+        ],
+        required=False, allow_null=True, allow_blank=True,
+    )
+    airline_mentioned_motive = serializers.ChoiceField(
+        choices=[
+            ('YES', 'Yes'),
+            ('NO', 'No'),
+            ('DONT_KNOW', "I don't know"),
+        ],
+        required=False, allow_null=True, allow_blank=True,
+    )
+    airline_motive = serializers.ChoiceField(
+        choices=[
+            ('TECHNICAL', 'Technical problem'),
+            ('METEOROLOGICAL', 'Meteorological conditions'),
+            ('STRIKE', 'Strike'),
+            ('AIRPORT_PROBLEMS', 'Problems with airport'),
+            ('CREW_PROBLEMS', 'Crew problems'),
+            ('OTHER', 'Other motives'),
+        ],
+        required=False, allow_null=True, allow_blank=True,
+    )
+    incident_description = serializers.CharField(
+        max_length=500, required=False, allow_blank=True, allow_null=True,
+    )
+
+
 class CaseCreateSerializer(serializers.Serializer):
     flight_itinerary = FlightItinerarySerializer()
     flight_details = FlightDetailsSerializer()
     passenger = PassengerSerializer()
     gdpr_consent = serializers.BooleanField()
+    distance_km = serializers.DecimalField(max_digits=10, decimal_places=2, required=False, allow_null=True, default=None)
+    compensation_amount = serializers.DecimalField(max_digits=8, decimal_places=2, required=False, allow_null=True, default=None)
+    disruption = DisruptionSerializer()
 
     def validate_gdpr_consent(self, value):
         if not value:
@@ -145,6 +204,7 @@ class CaseCreateSerializer(serializers.Serializer):
         itinerary = validated_data['flight_itinerary']
         flight_details = validated_data['flight_details']
         passenger_data = validated_data['passenger']
+        disruption_data = validated_data.get('disruption', {})
         connecting = itinerary.get('connecting_flights', [])
         problem_index = itinerary.get('problem_flight_index')
 
@@ -154,6 +214,16 @@ class CaseCreateSerializer(serializers.Serializer):
                 reservation_number=flight_details['reservation_number'],
                 planned_departure_time=flight_details['planned_departure_time'],
                 planned_arrival_time=flight_details['planned_arrival_time'],
+                distance_km=validated_data.get('distance_km'),
+                compensation_amount=validated_data.get('compensation_amount'),
+                disruption_type=disruption_data.get('disruption_type'),
+                cancellation_notice_period=disruption_data.get('cancellation_notice_period') or None,
+                delay_arrival=disruption_data.get('delay_arrival') or None,
+                denied_boarding_voluntary=disruption_data.get('denied_boarding_voluntary'),
+                denied_boarding_reason=disruption_data.get('denied_boarding_reason') or None,
+                airline_mentioned_motive=disruption_data.get('airline_mentioned_motive') or None,
+                airline_motive=disruption_data.get('airline_motive') or None,
+                incident_description=disruption_data.get('incident_description') or None,
             )
 
             # Create Passenger

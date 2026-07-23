@@ -10,6 +10,61 @@ export async function searchAirports(query: string): Promise<AirportOption[]> {
   return response.json();
 }
 
+export interface DistanceResult {
+  distance_km: number;
+  compensation_amount: number;
+  source: 'airportgap' | 'haversine';
+}
+
+function getCompensationAmount(distanceKm: number): number {
+  if (distanceKm < 1500) return 250;
+  if (distanceKm <= 3500) return 400;
+  return 600;
+}
+
+export async function calculateDistance(from: string, to: string): Promise<DistanceResult> {
+  // Try airportgap.com directly
+  try {
+    const formData = new URLSearchParams();
+    formData.append('from', from);
+    formData.append('to', to);
+
+    const response = await fetch('https://airportgap.com/api/airports/distance', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: formData.toString(),
+    });
+
+    if (response.ok) {
+      const json = await response.json();
+      const kilometers: number = json.data.attributes.kilometers;
+      return {
+        distance_km: Math.round(kilometers * 100) / 100,
+        compensation_amount: getCompensationAmount(kilometers),
+        source: 'airportgap',
+      };
+    }
+  } catch {
+    // Fall through to backend fallback
+  }
+
+  // Fallback to backend Haversine endpoint
+  const fallbackResponse = await fetch(
+    `/api/airports/distance/?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`
+  );
+
+  if (!fallbackResponse.ok) {
+    throw new Error('Unable to calculate distance');
+  }
+
+  const fallbackData = await fallbackResponse.json();
+  return {
+    distance_km: fallbackData.distance_km,
+    compensation_amount: fallbackData.compensation_amount,
+    source: 'haversine',
+  };
+}
+
 function toISODateTime(value: string): string {
   if (!value) return value;
   // datetime-local gives "2026-07-20T10:00", backend expects ISO with timezone
@@ -33,6 +88,32 @@ export async function submitCase(formData: CaseFormData): Promise<CaseResponse> 
       email: formData.emailGdpr.email,
     },
     gdpr_consent: formData.emailGdpr.gdpr_consent,
+    distance_km: formData.compensation.distance_km,
+    compensation_amount: formData.compensation.compensation_amount,
+    disruption: {
+      disruption_type: formData.disruption.disruption_type,
+      ...(formData.disruption.cancellation_notice_period && {
+        cancellation_notice_period: formData.disruption.cancellation_notice_period,
+      }),
+      ...(formData.disruption.delay_arrival && {
+        delay_arrival: formData.disruption.delay_arrival,
+      }),
+      ...(formData.disruption.denied_boarding_voluntary !== null && {
+        denied_boarding_voluntary: formData.disruption.denied_boarding_voluntary,
+      }),
+      ...(formData.disruption.denied_boarding_reason && {
+        denied_boarding_reason: formData.disruption.denied_boarding_reason,
+      }),
+      ...(formData.disruption.airline_mentioned_motive && {
+        airline_mentioned_motive: formData.disruption.airline_mentioned_motive,
+      }),
+      ...(formData.disruption.airline_motive && {
+        airline_motive: formData.disruption.airline_motive,
+      }),
+      ...(formData.disruption.incident_description && {
+        incident_description: formData.disruption.incident_description,
+      }),
+    },
   };
 
   const body = new FormData();

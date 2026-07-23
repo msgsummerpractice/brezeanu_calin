@@ -43,12 +43,30 @@ export interface EmailGdprData {
   gdpr_consent: boolean;
 }
 
+export interface CompensationData {
+  distance_km: number | null;
+  compensation_amount: number | null;
+}
+
+export interface DisruptionData {
+  disruption_type: string;
+  cancellation_notice_period: string;
+  delay_arrival: string;
+  denied_boarding_voluntary: boolean | null;
+  denied_boarding_reason: string;
+  airline_mentioned_motive: string;
+  airline_motive: string;
+  incident_description: string;
+}
+
 export interface CaseFormData {
   flightItinerary: FlightItineraryData;
   emailGdpr: EmailGdprData;
   flightDetails: FlightDetailsData;
   passenger: PassengerData;
   documents: DocumentsData;
+  compensation: CompensationData;
+  disruption: DisruptionData;
 }
 
 export interface AirportOption {
@@ -97,5 +115,19 @@ export const INITIAL_FORM_DATA: CaseFormData = {
   documents: {
     boarding_pass: null,
     identity_document: null,
+  },
+  compensation: {
+    distance_km: null,
+    compensation_amount: null,
+  },
+  disruption: {
+    disruption_type: '',
+    cancellation_notice_period: '',
+    delay_arrival: '',
+    denied_boarding_voluntary: null,
+    denied_boarding_reason: '',
+    airline_mentioned_motive: '',
+    airline_motive: '',
+    incident_description: '',
   },
 };
