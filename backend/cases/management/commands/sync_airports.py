@@ -1,10 +1,24 @@
+import urllib3
+from decimal import Decimal, InvalidOperation
+
 import requests
 from django.core.management.base import BaseCommand
 from airports.models import Airport
 
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 
 class Command(BaseCommand):
     help = 'Sync airports from AirportGap API into the database'
+
+    def _parse_coordinate(self, value):
+        """Safely convert a coordinate string to Decimal, returning None if invalid."""
+        if value is None:
+            return None
+        try:
+            return Decimal(str(value).strip())
+        except (InvalidOperation, ValueError):
+            return None
 
     def handle(self, *args, **options):
         url = 'https://airportgap.com/api/airports'
@@ -14,7 +28,7 @@ class Command(BaseCommand):
 
         while url:
             self.stdout.write(f'Fetching: {url}')
-            response = requests.get(url, timeout=30)
+            response = requests.get(url, timeout=30, verify=False)
             response.raise_for_status()
             payload = response.json()
 
@@ -31,6 +45,8 @@ class Command(BaseCommand):
                         'name': (attrs.get('name') or '')[:255],
                         'city': (attrs.get('city') or '')[:255],
                         'country': (attrs.get('country') or '')[:255],
+                        'latitude': self._parse_coordinate(attrs.get('latitude')),
+                        'longitude': self._parse_coordinate(attrs.get('longitude')),
                     }
                 )
                 if created:

@@ -9,6 +9,46 @@ class CaseStatus(models.TextChoices):
     INVALID = 'INVALID', 'Invalid'
 
 
+class DisruptionType(models.TextChoices):
+    CANCELLATION = 'CANCELLATION', 'Cancellation'
+    DELAY = 'DELAY', 'Delay'
+    DENIED_BOARDING = 'DENIED_BOARDING', 'Denied Boarding'
+
+
+class CancellationNoticePeriod(models.TextChoices):
+    MORE_THAN_14_DAYS = 'MORE_THAN_14_DAYS', 'More than 14 days'
+    LESS_THAN_14_DAYS = 'LESS_THAN_14_DAYS', 'Less than 14 days'
+    ON_FLIGHT_DAY = 'ON_FLIGHT_DAY', 'On flight day'
+
+
+class DelayArrival(models.TextChoices):
+    LESS_THAN_3H = 'LESS_THAN_3H', 'Less than 3 hours'
+    MORE_THAN_3H = 'MORE_THAN_3H', 'More than 3 hours'
+    CONNECTION_LOST = 'CONNECTION_LOST', 'Connection flight lost'
+
+
+class DeniedBoardingReason(models.TextChoices):
+    OVERBOOKED = 'OVERBOOKED', 'Flight overbooked'
+    AGGRESSIVE = 'AGGRESSIVE', 'Aggressive behavior with staff'
+    INTOXICATION = 'INTOXICATION', 'Intoxication'
+    UNSPECIFIED = 'UNSPECIFIED', 'Unspecified reason'
+
+
+class AirlineMentionedMotive(models.TextChoices):
+    YES = 'YES', 'Yes'
+    NO = 'NO', 'No'
+    DONT_KNOW = 'DONT_KNOW', "I don't know"
+
+
+class AirlineMotive(models.TextChoices):
+    TECHNICAL = 'TECHNICAL', 'Technical problem'
+    METEOROLOGICAL = 'METEOROLOGICAL', 'Meteorological conditions'
+    STRIKE = 'STRIKE', 'Strike'
+    AIRPORT_PROBLEMS = 'AIRPORT_PROBLEMS', 'Problems with airport'
+    CREW_PROBLEMS = 'CREW_PROBLEMS', 'Crew problems'
+    OTHER = 'OTHER', 'Other motives'
+
+
 class Case(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     status = models.CharField(
@@ -19,6 +59,28 @@ class Case(models.Model):
     reservation_number = models.CharField(max_length=50)
     planned_departure_time = models.DateTimeField()
     planned_arrival_time = models.DateTimeField()
+    distance_km = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    compensation_amount = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
+    disruption_type = models.CharField(
+        max_length=20, choices=DisruptionType.choices, null=True, blank=True
+    )
+    cancellation_notice_period = models.CharField(
+        max_length=20, choices=CancellationNoticePeriod.choices, null=True, blank=True
+    )
+    delay_arrival = models.CharField(
+        max_length=20, choices=DelayArrival.choices, null=True, blank=True
+    )
+    denied_boarding_voluntary = models.BooleanField(null=True, blank=True)
+    denied_boarding_reason = models.CharField(
+        max_length=20, choices=DeniedBoardingReason.choices, null=True, blank=True
+    )
+    airline_mentioned_motive = models.CharField(
+        max_length=10, choices=AirlineMentionedMotive.choices, null=True, blank=True
+    )
+    airline_motive = models.CharField(
+        max_length=20, choices=AirlineMotive.choices, null=True, blank=True
+    )
+    incident_description = models.TextField(max_length=500, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

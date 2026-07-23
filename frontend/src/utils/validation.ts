@@ -4,6 +4,7 @@ import type {
   FlightDetailsData,
   PassengerData,
   DocumentsData,
+  DisruptionData,
 } from '../components/CaseWizard/types';
 
 export type FieldErrors = Record<string, string>;
@@ -129,6 +130,16 @@ export function validatePassengerDetails(data: PassengerData, documents: Documen
     if (!ALLOWED_FILE_TYPES.includes(documents.identity_document.type)) {
       errors.identity_document = 'Identity document must be PDF, JPG, or PNG.';
     }
+  }
+
+  return errors;
+}
+
+export function validateDisruption(data: DisruptionData): FieldErrors {
+  const errors: FieldErrors = {};
+
+  if (!data.disruption_type) {
+    errors.disruption_type = 'Please select a disruption type.';
   }
 
   return errors;
