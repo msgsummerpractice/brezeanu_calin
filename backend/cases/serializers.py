@@ -298,4 +298,4 @@ class CaseResponseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Case
-        fields = ['case_id', 'status', 'created_at']
+        fields = ['case_id', 'status', 'colleague', 'created_at']

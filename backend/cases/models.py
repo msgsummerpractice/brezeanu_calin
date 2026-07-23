@@ -81,6 +81,7 @@ class Case(models.Model):
         max_length=20, choices=AirlineMotive.choices, null=True, blank=True
     )
     incident_description = models.TextField(max_length=500, null=True, blank=True)
+    colleague = models.CharField(max_length=255, blank=True, default='')
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
