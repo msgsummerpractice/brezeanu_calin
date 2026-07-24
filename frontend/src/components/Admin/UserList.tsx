@@ -10,6 +10,7 @@ export function UserList() {
   const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
   const [editForm, setEditForm] = useState({ first_name: '', last_name: '', email: '', role: 'User', reset_password: false });
   const [deleteConfirm, setDeleteConfirm] = useState<AdminUser | null>(null);
+  const [deleteSuccess, setDeleteSuccess] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [createForm, setCreateForm] = useState({ first_name: '', last_name: '', email: '', role: 'Agent' });
   const [createSuccess, setCreateSuccess] = useState<{ email: string; password: string } | null>(null);
@@ -50,9 +51,12 @@ export function UserList() {
   const handleDelete = async () => {
     if (!token || !deleteConfirm) return;
     try {
+      const name = `${deleteConfirm.first_name} ${deleteConfirm.last_name}`;
       await deleteUser(token, deleteConfirm.id);
       setDeleteConfirm(null);
+      setDeleteSuccess(`User ${name} has been deleted successfully.`);
       fetchUsers();
+      setTimeout(() => setDeleteSuccess(null), 5000);
     } catch (e: any) {
       setError(e.message);
     }
@@ -90,6 +94,13 @@ export function UserList() {
       </div>
 
       {error && <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '8px', padding: '0.75rem', color: '#f87171', marginBottom: '1rem' }}>{error}</div>}
+
+      {deleteSuccess && (
+        <div role="status" aria-live="polite" style={{ background: 'rgba(74,222,128,0.1)', border: '1px solid rgba(74,222,128,0.3)', borderRadius: '8px', padding: '0.75rem', color: '#4ade80', marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span>{deleteSuccess}</span>
+          <button aria-label="Close" onClick={() => setDeleteSuccess(null)} style={{ background: 'none', border: 'none', color: '#4ade80', cursor: 'pointer', fontSize: '1.2rem', padding: '0 0.5rem' }}>×</button>
+        </div>
+      )}
 
       <div style={{ overflowX: 'auto', borderRadius: '12px', border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(15,23,42,0.6)' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
