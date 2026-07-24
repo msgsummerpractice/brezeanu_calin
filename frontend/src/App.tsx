@@ -1,6 +1,33 @@
+import { useState } from 'react';
 import { CaseWizard } from './components/CaseWizard/CaseWizard';
+import { AuthProvider, useAuth } from './components/Auth/AuthContext';
+import { Login } from './components/Auth/Login';
+import { ChangePassword } from './components/Auth/ChangePassword';
 
-function App() {
+function AppContent() {
+  const { isAuthenticated, mustChangePassword, logout } = useAuth();
+  const [page, setPage] = useState<'home' | 'login' | 'change-password'>('home');
+
+  // If user just logged in and must change password
+  if (isAuthenticated && mustChangePassword) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '2rem 1rem' }}>
+        <ChangePassword onSuccess={() => setPage('home')} />
+      </div>
+    );
+  }
+
+  if (page === 'login') {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '2rem 1rem' }}>
+        <Login onLoginSuccess={() => setPage('home')} />
+        <button onClick={() => setPage('home')} style={{ marginTop: '1rem', background: 'none', border: 'none', color: '#818cf8', cursor: 'pointer' }}>
+          ← Back to case submission
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div style={{
       minHeight: '100vh',
@@ -9,6 +36,17 @@ function App() {
       alignItems: 'center',
       padding: '2rem 1rem',
     }}>
+      {/* Login/Account button */}
+      <div style={{ position: 'absolute', top: '1rem', right: '1.5rem', display: 'flex', gap: '0.5rem' }}>
+        {isAuthenticated && (
+          <button onClick={logout} style={{ background: 'none', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '8px', color: '#f87171', padding: '0.5rem 1rem', cursor: 'pointer' }}>
+            Logout
+          </button>
+        )}
+        <button onClick={() => setPage('login')} style={{ background: 'none', border: '1px solid rgba(129,140,248,0.3)', borderRadius: '8px', color: '#818cf8', padding: '0.5rem 1rem', cursor: 'pointer' }}>
+          {isAuthenticated ? 'My Account' : 'Login'}
+        </button>
+      </div>
       {/* Header */}
       <div style={{
         textAlign: 'center',
@@ -79,6 +117,14 @@ function App() {
         Protected by EU Regulation 261/2004
       </div>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }
 

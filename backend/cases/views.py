@@ -76,5 +76,17 @@ class CaseCreateView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         case = serializer.save()
+
+        # Create user account for passenger
+        user_created = False
+        try:
+            from accounts.services import create_user_account
+            _, user_created = create_user_account(case.passenger)
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).error(f"Failed to create user account: {e}")
+
         response_serializer = CaseResponseSerializer(case)
-        return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+        response_data = response_serializer.data
+        response_data['user_created'] = user_created
+        return Response(response_data, status=status.HTTP_201_CREATED)

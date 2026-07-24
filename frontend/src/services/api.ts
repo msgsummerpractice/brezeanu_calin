@@ -138,3 +138,49 @@ export async function submitCase(formData: CaseFormData): Promise<CaseResponse> 
 
   return response.json();
 }
+
+// Auth API
+
+export interface LoginResponse {
+  token: string;
+  must_change_password: boolean;
+  user: { email: string; first_name: string; last_name: string };
+}
+
+export async function login(email: string, password: string): Promise<LoginResponse> {
+  const response = await fetch('/api/auth/login/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+  });
+  if (!response.ok) {
+    const data = await response.json();
+    throw new Error(data.detail || 'Login failed');
+  }
+  return response.json();
+}
+
+export interface ChangePasswordResponse {
+  detail: string;
+  token: string;
+}
+
+export async function changePassword(
+  token: string,
+  oldPassword: string,
+  newPassword: string
+): Promise<ChangePasswordResponse> {
+  const response = await fetch('/api/auth/change-password/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Token ${token}`,
+    },
+    body: JSON.stringify({ old_password: oldPassword, new_password: newPassword }),
+  });
+  if (!response.ok) {
+    const data = await response.json();
+    throw new Error(data.old_password?.[0] || data.new_password?.[0] || 'Password change failed');
+  }
+  return response.json();
+}
