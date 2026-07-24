@@ -31,3 +31,10 @@ class AdminUserUpdateSerializer(serializers.Serializer):
     email = serializers.EmailField()
     role = serializers.ChoiceField(choices=['Admin', 'Agent', 'User'])
     reset_password = serializers.BooleanField(default=False, required=False)
+
+
+class CreateColleagueSerializer(serializers.Serializer):
+    first_name = serializers.CharField(max_length=150)
+    last_name = serializers.CharField(max_length=150)
+    email = serializers.EmailField()
+    role = serializers.ChoiceField(choices=['Agent', 'User'])

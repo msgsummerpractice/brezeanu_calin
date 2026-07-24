@@ -51,6 +51,35 @@ def create_user_account(passenger):
     return user, True
 
 
+def create_colleague_account(first_name, last_name, email, role):
+    """
+    Create a colleague account (admin-initiated).
+    Returns (user, generated_password).
+    """
+    password = generate_password()
+    user = User.objects.create_user(
+        username=email,
+        email=email,
+        password=password,
+        first_name=first_name,
+        last_name=last_name,
+    )
+
+    # Set role flags
+    if role == 'Agent':
+        user.is_staff = True
+    user.save()
+
+    UserProfile.objects.create(
+        user=user,
+        must_change_password=True,
+    )
+
+    _send_colleague_credentials_email(first_name, last_name, email, password)
+
+    return user, password
+
+
 def _send_credentials_email(passenger, email, password):
     subject = 'Your SkyRefund Account Has Been Created'
     message = (
@@ -74,3 +103,27 @@ def _send_credentials_email(passenger, email, password):
         )
     except Exception as e:
         logger.error(f"Failed to send credentials email to {email}: {e}")
+
+
+def _send_colleague_credentials_email(first_name, last_name, email, password):
+    subject = 'Your SkyRefund Account Has Been Created'
+    message = (
+        f"Dear {first_name} {last_name},\n\n"
+        f"A colleague account has been created for you at SkyRefund.\n\n"
+        f"Login credentials:\n"
+        f"  Email: {email}\n"
+        f"  Password: {password}\n\n"
+        f"Please log in and change your password immediately.\n\n"
+        f"Best regards,\n"
+        f"SkyRefund Team"
+    )
+    try:
+        send_mail(
+            subject=subject,
+            message=message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[email],
+            fail_silently=False,
+        )
+    except Exception as e:
+        logger.error(f"Failed to send colleague credentials email to {email}: {e}")
