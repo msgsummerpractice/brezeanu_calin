@@ -214,16 +214,6 @@ class CaseCreateSerializer(serializers.Serializer):
                 reservation_number=flight_details['reservation_number'],
                 planned_departure_time=flight_details['planned_departure_time'],
                 planned_arrival_time=flight_details['planned_arrival_time'],
-                distance_km=validated_data.get('distance_km'),
-                compensation_amount=validated_data.get('compensation_amount'),
-                disruption_type=disruption_data.get('disruption_type'),
-                cancellation_notice_period=disruption_data.get('cancellation_notice_period') or None,
-                delay_arrival=disruption_data.get('delay_arrival') or None,
-                denied_boarding_voluntary=disruption_data.get('denied_boarding_voluntary'),
-                denied_boarding_reason=disruption_data.get('denied_boarding_reason') or None,
-                airline_mentioned_motive=disruption_data.get('airline_mentioned_motive') or None,
-                airline_motive=disruption_data.get('airline_motive') or None,
-                incident_description=disruption_data.get('incident_description') or None,
             )
 
             # Create Passenger
@@ -298,4 +288,4 @@ class CaseResponseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Case
-        fields = ['case_id', 'status', 'colleague', 'created_at']
+        fields = ['case_id', 'status', 'created_at']
