@@ -3,7 +3,7 @@ import { login as apiLogin, changePassword as apiChangePassword, LoginResponse }
 
 interface AuthState {
   token: string | null;
-  user: { email: string; first_name: string; last_name: string } | null;
+  user: { email: string; first_name: string; last_name: string; is_staff: boolean; is_superuser: boolean } | null;
   mustChangePassword: boolean;
   isAuthenticated: boolean;
 }
