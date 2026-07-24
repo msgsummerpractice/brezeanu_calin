@@ -236,3 +236,35 @@ export async function deleteUser(token: string, id: number): Promise<void> {
     throw new Error(err.detail || 'Delete failed');
   }
 }
+
+export interface CreateUserData {
+  first_name: string;
+  last_name: string;
+  email: string;
+  role: string;
+}
+
+export interface CreateUserResponse {
+  id: number;
+  first_name: string;
+  last_name: string;
+  email: string;
+  role: string;
+  generated_password: string;
+}
+
+export async function createUser(token: string, data: CreateUserData): Promise<CreateUserResponse> {
+  const response = await fetch('/api/admin/users/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Token ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(err.email?.[0] || err.detail || 'User creation failed');
+  }
+  return response.json();
+}

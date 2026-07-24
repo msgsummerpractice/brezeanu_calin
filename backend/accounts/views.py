@@ -8,8 +8,8 @@ from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle
 from rest_framework.views import APIView
 from .models import UserProfile
-from .serializers import LoginSerializer, ChangePasswordSerializer, AdminUserSerializer, AdminUserUpdateSerializer
-from .services import generate_password
+from .serializers import LoginSerializer, ChangePasswordSerializer, AdminUserSerializer, AdminUserUpdateSerializer, CreateColleagueSerializer
+from .services import generate_password, create_colleague_account
 
 
 class LoginThrottle(AnonRateThrottle):
@@ -125,6 +125,35 @@ class AdminUserListView(APIView):
             })
 
         return Response(data)
+
+    def post(self, request):
+        serializer = CreateColleagueSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        data = serializer.validated_data
+
+        # Check email uniqueness
+        if User.objects.filter(email=data['email']).exists():
+            return Response(
+                {'email': ['A user with this email already exists.']},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        user, password = create_colleague_account(
+            first_name=data['first_name'],
+            last_name=data['last_name'],
+            email=data['email'],
+            role=data['role'],
+        )
+
+        return Response({
+            'id': user.id,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'email': user.email,
+            'role': _get_user_role(user),
+            'generated_password': password,
+        }, status=status.HTTP_201_CREATED)
 
 
 class AdminUserDetailView(APIView):
