@@ -3,10 +3,11 @@ import { CaseWizard } from './components/CaseWizard/CaseWizard';
 import { AuthProvider, useAuth } from './components/Auth/AuthContext';
 import { Login } from './components/Auth/Login';
 import { ChangePassword } from './components/Auth/ChangePassword';
+import { UserList } from './components/Admin/UserList';
 
 function AppContent() {
-  const { isAuthenticated, mustChangePassword, logout } = useAuth();
-  const [page, setPage] = useState<'home' | 'login' | 'change-password'>('home');
+  const { isAuthenticated, mustChangePassword, logout, user } = useAuth();
+  const [page, setPage] = useState<'home' | 'login' | 'change-password' | 'users'>('home');
 
   // If user just logged in and must change password
   if (isAuthenticated && mustChangePassword) {
@@ -28,6 +29,24 @@ function AppContent() {
     );
   }
 
+  if (page === 'users' && isAuthenticated && user?.is_staff) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '2rem 1rem' }}>
+        <div style={{ position: 'absolute', top: '1rem', right: '1.5rem', display: 'flex', gap: '0.5rem' }}>
+          <button onClick={() => setPage('home')} style={{ background: 'none', border: '1px solid rgba(129,140,248,0.3)', borderRadius: '8px', color: '#818cf8', padding: '0.5rem 1rem', cursor: 'pointer' }}>
+            ← Back
+          </button>
+          <button onClick={logout} style={{ background: 'none', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '8px', color: '#f87171', padding: '0.5rem 1rem', cursor: 'pointer' }}>
+            Logout
+          </button>
+        </div>
+        <div style={{ width: '100%', maxWidth: '960px', marginTop: '3rem' }}>
+          <UserList />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={{
       minHeight: '100vh',
@@ -38,6 +57,11 @@ function AppContent() {
     }}>
       {/* Login/Account button */}
       <div style={{ position: 'absolute', top: '1rem', right: '1.5rem', display: 'flex', gap: '0.5rem' }}>
+        {isAuthenticated && user?.is_staff && (
+          <button onClick={() => setPage('users')} style={{ background: 'none', border: '1px solid rgba(245,158,11,0.3)', borderRadius: '8px', color: '#fbbf24', padding: '0.5rem 1rem', cursor: 'pointer' }}>
+            Users
+          </button>
+        )}
         {isAuthenticated && (
           <button onClick={logout} style={{ background: 'none', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '8px', color: '#f87171', padding: '0.5rem 1rem', cursor: 'pointer' }}>
             Logout

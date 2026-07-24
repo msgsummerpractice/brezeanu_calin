@@ -144,7 +144,7 @@ export async function submitCase(formData: CaseFormData): Promise<CaseResponse> 
 export interface LoginResponse {
   token: string;
   must_change_password: boolean;
-  user: { email: string; first_name: string; last_name: string };
+  user: { email: string; first_name: string; last_name: string; is_staff: boolean; is_superuser: boolean };
 }
 
 export async function login(email: string, password: string): Promise<LoginResponse> {
@@ -183,4 +183,56 @@ export async function changePassword(
     throw new Error(data.old_password?.[0] || data.new_password?.[0] || 'Password change failed');
   }
   return response.json();
+}
+
+// Admin API
+
+export interface AdminUser {
+  id: number;
+  first_name: string;
+  last_name: string;
+  email: string;
+  role: string;
+  assigned_case_count: number;
+}
+
+export async function getUsers(token: string): Promise<AdminUser[]> {
+  const response = await fetch('/api/admin/users/', {
+    headers: { Authorization: `Token ${token}` },
+  });
+  if (!response.ok) {
+    throw new Error('Failed to fetch users');
+  }
+  return response.json();
+}
+
+export async function updateUser(
+  token: string,
+  id: number,
+  data: { first_name: string; last_name: string; email: string; role: string; reset_password?: boolean }
+): Promise<AdminUser> {
+  const response = await fetch(`/api/admin/users/${id}/`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Token ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(err.email?.[0] || err.detail || 'Update failed');
+  }
+  return response.json();
+}
+
+export async function deleteUser(token: string, id: number): Promise<void> {
+  const response = await fetch(`/api/admin/users/${id}/`, {
+    method: 'DELETE',
+    headers: { Authorization: `Token ${token}` },
+  });
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(err.detail || 'Delete failed');
+  }
 }
