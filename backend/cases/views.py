@@ -2,8 +2,9 @@ import json
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework.throttling import AnonRateThrottle
+from .models import Case
 from .serializers import CaseCreateSerializer, CaseResponseSerializer
 from .validators import validate_file_size, validate_file_type
 
@@ -90,3 +91,34 @@ class CaseCreateView(APIView):
         response_data = response_serializer.data
         response_data['user_created'] = user_created
         return Response(response_data, status=status.HTTP_201_CREATED)
+
+
+class AdminCaseListView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        cases = Case.objects.prefetch_related('flights').all()
+        data = []
+        for case in cases:
+            first_flight = case.flights.first()
+            data.append({
+                'id': str(case.id),
+                'case_date': case.created_at.strftime('%Y-%m-%d'),
+                'flight_number': first_flight.flight_number if first_flight else '',
+                'flight_date': first_flight.flight_date.strftime('%Y-%m-%d') if first_flight else '',
+                'status': case.status,
+            })
+        return Response(data)
+
+
+class AdminCaseDeleteView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def delete(self, request, pk):
+        try:
+            case = Case.objects.get(pk=pk)
+        except Case.DoesNotExist:
+            return Response({'detail': 'Case not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        case.delete()
+        return Response({'detail': 'Case deleted successfully.'}, status=status.HTTP_200_OK)

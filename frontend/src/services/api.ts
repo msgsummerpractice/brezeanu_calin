@@ -268,3 +268,35 @@ export async function createUser(token: string, data: CreateUserData): Promise<C
   }
   return response.json();
 }
+
+// Admin Cases API
+
+export interface AdminCase {
+  id: string;
+  case_date: string;
+  flight_number: string;
+  flight_date: string;
+  status: string;
+}
+
+export async function getCases(token: string): Promise<AdminCase[]> {
+  const response = await fetch('/api/admin/cases/', {
+    headers: { Authorization: `Token ${token}` },
+  });
+  if (!response.ok) {
+    throw new Error('Failed to fetch cases');
+  }
+  return response.json();
+}
+
+export async function deleteCase(token: string, id: string): Promise<{ detail: string }> {
+  const response = await fetch(`/api/admin/cases/${id}/`, {
+    method: 'DELETE',
+    headers: { Authorization: `Token ${token}` },
+  });
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(err.detail || 'Delete failed');
+  }
+  return response.json();
+}
