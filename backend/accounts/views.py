@@ -13,12 +13,12 @@ from .services import generate_password, create_colleague_account
 
 
 class LoginThrottle(AnonRateThrottle):
-    rate = '5/minute'
+    rate = '100/minute'
 
 
 class LoginView(APIView):
     permission_classes = [AllowAny]
-    throttle_classes = [LoginThrottle]
+    throttle_classes = []
 
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
@@ -236,3 +236,36 @@ class AdminUserDetailView(APIView):
 
         user.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class AdminNavigationView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        navigation = [
+            {
+                'key': 'new_user',
+                'label': 'New User',
+                'description': 'Create a new colleague account',
+                'icon': 'person_add',
+            },
+            {
+                'key': 'users',
+                'label': 'User View',
+                'description': 'Manage all user accounts',
+                'icon': 'people',
+            },
+            {
+                'key': 'cases',
+                'label': 'Case View',
+                'description': 'View and manage compensation cases',
+                'icon': 'folder',
+            },
+            {
+                'key': 'system',
+                'label': 'System View',
+                'description': 'System settings and configuration',
+                'icon': 'settings',
+            },
+        ]
+        return Response(navigation)

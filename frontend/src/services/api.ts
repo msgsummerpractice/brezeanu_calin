@@ -300,3 +300,22 @@ export async function deleteCase(token: string, id: string): Promise<{ detail: s
   }
   return response.json();
 }
+
+// Admin Navigation API
+
+export interface AdminNavItem {
+  key: string;
+  label: string;
+  description: string;
+  icon: string;
+}
+
+export async function getAdminNavigation(token: string): Promise<AdminNavItem[]> {
+  const response = await fetch('/api/admin/navigation/', {
+    headers: { Authorization: `Token ${token}` },
+  });
+  if (!response.ok) {
+    throw new Error('Failed to fetch admin navigation');
+  }
+  return response.json();
+}

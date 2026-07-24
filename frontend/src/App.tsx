@@ -5,10 +5,11 @@ import { Login } from './components/Auth/Login';
 import { ChangePassword } from './components/Auth/ChangePassword';
 import { UserList } from './components/Admin/UserList';
 import { CaseList } from './components/Admin/CaseList';
+import { AdminLanding } from './components/Admin/AdminLanding';
 
 function AppContent() {
   const { isAuthenticated, mustChangePassword, logout, user } = useAuth();
-  const [page, setPage] = useState<'home' | 'login' | 'change-password' | 'users' | 'cases'>('home');
+  const [page, setPage] = useState<'home' | 'login' | 'change-password' | 'admin' | 'users' | 'cases' | 'system'>('home');
 
   // If user just logged in and must change password
   if (isAuthenticated && mustChangePassword) {
@@ -34,8 +35,8 @@ function AppContent() {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '2rem 1rem' }}>
         <div style={{ position: 'absolute', top: '1rem', right: '1.5rem', display: 'flex', gap: '0.5rem' }}>
-          <button onClick={() => setPage('home')} style={{ background: 'none', border: '1px solid rgba(129,140,248,0.3)', borderRadius: '8px', color: '#818cf8', padding: '0.5rem 1rem', cursor: 'pointer' }}>
-            ← Back
+          <button onClick={() => setPage('admin')} style={{ background: 'none', border: '1px solid rgba(129,140,248,0.3)', borderRadius: '8px', color: '#818cf8', padding: '0.5rem 1rem', cursor: 'pointer' }}>
+            ← Admin
           </button>
           <button onClick={logout} style={{ background: 'none', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '8px', color: '#f87171', padding: '0.5rem 1rem', cursor: 'pointer' }}>
             Logout
@@ -52,8 +53,8 @@ function AppContent() {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '2rem 1rem' }}>
         <div style={{ position: 'absolute', top: '1rem', right: '1.5rem', display: 'flex', gap: '0.5rem' }}>
-          <button onClick={() => setPage('home')} style={{ background: 'none', border: '1px solid rgba(129,140,248,0.3)', borderRadius: '8px', color: '#818cf8', padding: '0.5rem 1rem', cursor: 'pointer' }}>
-            ← Back
+          <button onClick={() => setPage('admin')} style={{ background: 'none', border: '1px solid rgba(129,140,248,0.3)', borderRadius: '8px', color: '#818cf8', padding: '0.5rem 1rem', cursor: 'pointer' }}>
+            ← Admin
           </button>
           <button onClick={logout} style={{ background: 'none', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '8px', color: '#f87171', padding: '0.5rem 1rem', cursor: 'pointer' }}>
             Logout
@@ -61,6 +62,49 @@ function AppContent() {
         </div>
         <div style={{ width: '100%', maxWidth: '960px', marginTop: '3rem' }}>
           <CaseList />
+        </div>
+      </div>
+    );
+  }
+
+  if (page === 'system' && isAuthenticated && user?.is_staff) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '2rem 1rem' }}>
+        <div style={{ position: 'absolute', top: '1rem', right: '1.5rem', display: 'flex', gap: '0.5rem' }}>
+          <button onClick={() => setPage('admin')} style={{ background: 'none', border: '1px solid rgba(129,140,248,0.3)', borderRadius: '8px', color: '#818cf8', padding: '0.5rem 1rem', cursor: 'pointer' }}>
+            ← Admin
+          </button>
+          <button onClick={logout} style={{ background: 'none', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '8px', color: '#f87171', padding: '0.5rem 1rem', cursor: 'pointer' }}>
+            Logout
+          </button>
+        </div>
+        <div style={{ width: '100%', maxWidth: '960px', marginTop: '3rem' }}>
+          <div style={{ width: '100%', maxWidth: '900px', margin: '0 auto' }}>
+            <h2 style={{ color: '#e2e8f0', fontSize: '1.5rem', fontWeight: 700, marginBottom: '1.5rem' }}>System Settings</h2>
+            <div style={{ background: 'rgba(30, 41, 59, 0.6)', border: '1px solid rgba(148, 163, 184, 0.2)', borderRadius: '12px', padding: '2rem', textAlign: 'center' }}>
+              <p style={{ color: '#94a3b8', fontSize: '0.95rem' }}>System configuration coming soon.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (page === 'admin' && isAuthenticated && user?.is_staff) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '2rem 1rem' }}>
+        <div style={{ position: 'absolute', top: '1rem', right: '1.5rem', display: 'flex', gap: '0.5rem' }}>
+          <button onClick={() => setPage('home')} style={{ background: 'none', border: '1px solid rgba(129,140,248,0.3)', borderRadius: '8px', color: '#818cf8', padding: '0.5rem 1rem', cursor: 'pointer' }}>
+            ← Home
+          </button>
+        </div>
+        <div style={{ width: '100%', maxWidth: '960px', marginTop: '3rem' }}>
+          <AdminLanding onNavigate={(key) => {
+            if (key === 'new_user') setPage('users');
+            else if (key === 'users') setPage('users');
+            else if (key === 'cases') setPage('cases');
+            else if (key === 'system') setPage('system');
+          }} />
         </div>
       </div>
     );
@@ -77,13 +121,8 @@ function AppContent() {
       {/* Login/Account button */}
       <div style={{ position: 'absolute', top: '1rem', right: '1.5rem', display: 'flex', gap: '0.5rem' }}>
         {isAuthenticated && user?.is_staff && (
-          <button onClick={() => setPage('cases')} style={{ background: 'none', border: '1px solid rgba(99,102,241,0.3)', borderRadius: '8px', color: '#818cf8', padding: '0.5rem 1rem', cursor: 'pointer' }}>
-            Cases
-          </button>
-        )}
-        {isAuthenticated && user?.is_staff && (
-          <button onClick={() => setPage('users')} style={{ background: 'none', border: '1px solid rgba(245,158,11,0.3)', borderRadius: '8px', color: '#fbbf24', padding: '0.5rem 1rem', cursor: 'pointer' }}>
-            Users
+          <button onClick={() => setPage('admin')} style={{ background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', border: 'none', borderRadius: '8px', color: '#fff', padding: '0.5rem 1rem', cursor: 'pointer', fontWeight: 600 }}>
+            Admin
           </button>
         )}
         {isAuthenticated && (
